@@ -1,23 +1,41 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import { useAuth } from './AuthContext';
+import axios from 'axios';
 
 const SignInPage = () => {
+    const [success, setSuccess] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login } = useAuth(); 
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const savedUser = JSON.parse(localStorage.getItem('user'));
-        
-        if (savedUser && savedUser.username === username && savedUser.password === password) {
-            login(savedUser); 
-            alert('Login successful!');
-            window.location.href = '/main'; 
-        } else {
-            setError('Invalid credentials. Please try again.');
+        try {
+            const response = await axios.post('https://auth-backend-138t.onrender.com/api/v1/users/login', {
+                username,
+                password
+            }, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.status === 200) {
+                setSuccess('Login successful!');
+                login(response.data.user); 
+                setTimeout(() => {
+                    navigate('/main');
+                }, 2000);
+            }
+        } catch (err) {
+            if (err.response?.status === 401) {
+                setError('Incorrect email or password.');
+            } else {
+                setError('Login failed. Please try again.');
+            }
+            console.error('Server error:', err.response?.data || err.message);
         }
     };
 
@@ -40,6 +58,7 @@ const SignInPage = () => {
                     required
                 />
                 <button type="submit">Sign In</button>
+                {success && <div className="success">{success}</div>}
                 {error && <div className="error">{error}</div>}
             </form>
         </div>

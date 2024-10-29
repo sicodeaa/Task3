@@ -17,7 +17,7 @@ const SignUpPage = () => {
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const usernameRegex = /^[a-zA-Z0-9]{4,12}$/;
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
 
         if (!emailRegex.test(email)) {
             setError('Invalid email format.');
@@ -38,17 +38,16 @@ const SignUpPage = () => {
 
         try {
             const response = await axios.post('https://auth-backend-138t.onrender.com/api/v1/users/register',  
-                JSON.stringify({
+                {
                 username: username,
                 fullName: name,
                 email: email,
                 password: password,
                 phone: phone,
                 dob:dob
-            }));
-            const body = await response.data();
-            console.log(body);
+            });
             if (response.status === 201) {
+                setError('');
                 setSuccess('Signup successful! Redirecting to sign-in...');
                 setTimeout(() => {
                     window.location.href = '/signin';
@@ -57,7 +56,8 @@ const SignUpPage = () => {
         } catch (err) {
             if (err.response?.status === 409) {
                 setError('An account with this email or username already exists.');
-            } else {
+            } 
+            else {
                 setError('Registration failed. Please try again.');
             }
             console.error('Server error:', err.response?.data || err.message);
@@ -110,7 +110,7 @@ const SignUpPage = () => {
                     required
                 />
                 <input
-                    type="number"
+                    type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Phone Number"
